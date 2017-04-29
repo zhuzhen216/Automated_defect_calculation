@@ -15,6 +15,9 @@ get_ipython().magic('matplotlib inline')
 
 # unit eV
 # computation restuls
+# specify the VBM and CBM
+# also VBM value in VASP output
+#
 VBM = 0
 CBM = 3.754
 absolute_VBM = 3.014
@@ -25,14 +28,20 @@ hole_trap = 0.86
 
 # In[428]:
 
-get_defect_info('V_Mn^')
+#get_defect_info('V_Mn^')
 
 
 # In[781]:
-
+#
 # set up a dictionary to defect_type, total_energy, correction
 # 'Ni_Mn^+':[-1156.15,0.15,1]
-data_Energy = {'bulk':[-1161.146,0.,0],'Na_Mn^0':[-1146.095,0.,0],'Mg_Na-V_Na^0':[-1159.163,0.0,0],'V_Na^-':[-1152.645,0.234,-1],'V_Na^0':[-1156.714,0.0,0],'Ni_Mn^-':[-1147.804,0.178,-1],'Ni_Mn^0':[-1152.156,0.,0],'Ge_Mn^+':[-1157.57,0.157,1],'Ge_Mn^0':[-1151.841,0.,0],'Ti_Mn^+':[-1165.538,0.134,1],'Ti_Mn^0':[-1159.923,0.,0],'Mg_Na^+':[-1167.622,0.16,1],'Mg_Na^0':[-1161.859,0.0,0],'Mg_Mn^-':[-1145.615,0.208,-1],'Mg_Mn^0':[-1149.804,0.,0],'Fe_Mn^0':[-1158.784,0.,0],'Co_Mn^0':[-1155.234,0.,0],'Al_Mn^0':[-1154.779,0.,0],'Mn_Na^0':[-1171.743,0.,0],'Mn_Na^+':[-1177.607,0.185,1],'Mn_Na^2+':[-1181.664,0.697,2],'Mn_Na-Na_Mn^0':[-1158.227,0.,0],'Mn_Na-Na_Mn^-':[-1153.676,0.187,-1],'V_Mn^3-':[-1127.904,1.879,-3],'V_Mn^2-':[-1132.523,0.984,-2],'V_Mn^-':[-1137.128,0.355,-1],'V_Mn^0':[-1140.706,0.,0],'H_i^0':[-1163.966,0.,0],'H_i^+':[-1169.478,0.22,1],'V_O^2+':[-1159.304,0.578,2],'V_O^+':[-1154.655,0.076,1],'V_O^0':[-1149.931,0.,0],'Na_Mn^2-':[-1137.182,0.776,-2],'Na_Mn^-':[-1141.656,0.265,-1]}
+# total energy: outputs of VASP
+# correction term: Freysoldt correction (Phys. Rev. Lett. 102, 016402)
+# The way to automaticly obtain it is under development
+#
+# format: defect_name:[total energy, correction, charge state]
+#
+data_Energy = {'bulk':[-1161.146,0.,0],'Na_Mn^0':[-1146.095,0.,0],'Mg_Na-V_Na^0':[-1159.163,0.0,0],'V_Na^-':[-1152.645,0.234,-1],'V_Na^0':[-1156.714,0.0,0],'Mn_Na^0':[-1171.743,0.,0],'Mn_Na^+':[-1177.607,0.185,1],'Mn_Na^2+':[-1181.664,0.697,2],'Mn_Na-Na_Mn^0':[-1158.227,0.,0],'Mn_Na-Na_Mn^-':[-1153.676,0.187,-1],'V_Mn^3-':[-1127.904,1.879,-3],'V_Mn^2-':[-1132.523,0.984,-2],'V_Mn^-':[-1137.128,0.355,-1],'V_Mn^0':[-1140.706,0.,0],'H_i^0':[-1163.966,0.,0],'H_i^+':[-1169.478,0.22,1],'V_O^2+':[-1159.304,0.578,2],'V_O^+':[-1154.655,0.076,1],'V_O^0':[-1149.931,0.,0]}
 
 
 # In[807]:
@@ -147,11 +156,17 @@ def get_defect_info(defect_name):
 
 # In[504]:
 
-get_defect_info('V_Na-Mn_Na^0')
+#get_defect_info('V_Na-Mn_Na^0')
 
 
 # In[489]:
-
+#
+# compute the formation energy of a specific defect under certain chem_pot
+# input: chemical potential, defect name
+# input_type: dictionary, string
+# output: formation energy
+# output_type: float
+#
 def comp_formation_energy(chem_pot, defect_name):
     global data_Energy
     if defect_name not in data_Energy:
@@ -191,7 +206,13 @@ comp_energy_group(ChemPot1,'Mn')
 
 
 # In[511]:
-
+####################################################################
+# compute formation energies of different types of defects
+# input: the choice of chemical potential
+# input_type: dictionary
+# output: formation energy of point defects
+# output_type: dictionary
+####################################################################
 def comp_energy_all(chem_pot):
     all_form_energy = {}
     global data_Energy
@@ -206,7 +227,9 @@ def comp_energy_all(chem_pot):
 
 
 # In[785]:
-
+#
+# convert the dictionary of formation energy to a DataFrame
+#
 form_Energy_DF=pd.DataFrame.from_dict(comp_energy_all(ChemPot1),orient='index')
 form_Energy_DF2=pd.DataFrame.from_dict(comp_energy_all(ChemPot2),orient='index')
 form_Energy_DF.rename(columns={0:'Formation enegy (eV) (Na-rich)'},inplace=True)
@@ -237,7 +260,7 @@ form_Energy_DF_total
 
 
 # In[586]:
-
+# Given the defect name, return charge state of the defect
 # the key in dictionary Formation follows:
 # V_Na^- or V_Mn^2-
 # from this we can get the Charge state
@@ -282,7 +305,7 @@ def group_Defect(chem_pot,elem):
 
 # In[719]:
 
-group_Defect(ChemPot1,'all')
+#group_Defect(ChemPot1,'all')
 
 
 # In[701]:
@@ -334,17 +357,15 @@ def transition_level(defect_string):
     return tran_lev_dict
 
 
-# In[786]:
-
-transition_level('Ni_Mn')
-
-
-# In[777]:
-
+####################################################################
+# 
 # set up transition kinks for plot
 # (0, formation energy)
 # (transition level, formation energy)
-# ...
+# (..., ...)
+# (3.754, formation energy)
+#
+####################################################################
 def set_up_plot(defect_type,chem_pot):
     #formation_energy=comp_energy_all(chem_pot)
     grouped_defect=group_Defect(chem_pot,'all')
@@ -367,9 +388,12 @@ def set_up_plot(defect_type,chem_pot):
 set_up_plot('Ni_Mn',ChemPot1)
 
 
-# In[721]:
-
+####################################################################
+# 
 # print out the calculated transition levels:
+# show the transition level of selected defect type
+#
+####################################################################
 def print_tran_level(defect_group):
     temp = {}
     for key1 in defect_group:
@@ -379,8 +403,12 @@ def print_tran_level(defect_group):
             print(key2,': ', temp[key2],'\n')
 
 
-# In[705]:
-
+####################################################################
+# This function is used to calculate the binding energy of a polaron
+# The inputs are: defect type 1, defect type 2, and polaron type 
+# (whether it is a hole polaron or electron polaron)
+# return a float-type value: binding energy (ev)
+####################################################################
 def comp_binding_polaron(defect1, defect2, polaron_type):
     # V_Na^0 and V_Na^- for example
     # polaron_type : hole
@@ -396,252 +424,3 @@ def comp_binding_polaron(defect1, defect2, polaron_type):
     elif polaron_type.lower() == 'electron':
         binding_energy = CBM-abs(comp_formation_energy(data_Energy,ChemPot1,defect1)-comp_formation_energy(data_Energy,ChemPot1,defect2))-elct_trap
     return binding_energy
-
-
-# In[479]:
-
-comp_binding_polaron('V_Na^0','V_Na^-','hole')
-
-
-# In[ ]:
-
-
-
-
-# ---
-# ## Al impurities
-# ---
-
-# In[368]:
-
-# Al impurities
-# at VBM
-# under Na-rich conditions
-Formation_Al_1 = {}
-Formation_Al_1['Al_Na^2+']=-2.3715
-Formation_Al_1['Al_Na-V_Na^+']=0.978
-Formation_Al_1['Al_Na-V_2Na^0']=4.7475
-Formation_Al_1['Al_Mn^0']=-0.3645
-Formation_Al_1_CBM = {}
-for i in Formation_Al_1:
-    Formation_Al_1_CBM[i]=Formation_Al_1[i]+ObtChargeState(i)*CBM
-Formation_Al_1_CBM
-
-
-# In[514]:
-
-comp_energy_group(ChemPot1,'Al')
-
-
-# In[365]:
-
-# at VBM
-# under Na-rich conditions
-Formation_Al_2 = {}
-Formation_Al_2['Al_Na^2+']=-0.3085
-Formation_Al_2['Al_Na-V_Na^+']=0.469
-Formation_Al_2['Al_Na-V_2Na^0']=1.6665
-Formation_Al_2['Al_Mn^0']=0.6635
-Formation_Al_2_CBM = {}
-for i in Formation_Al_1:
-    Formation_Al_2_CBM[i]=Formation_Al_2[i]+ObtChargeState(i)*CBM
-Formation_Al_2_CBM
-
-
-# In[696]:
-
-x = [VBM, CBM]
-y1 = [[Formation_Al_1[i],Formation_Al_1_CBM[i]] for i in Formation_Al_1]
-#print(y1)
-#linetypes = ['solid','--',':','-.']
-#fig = plt.figure()
-for i in range(len(y1)):
-    plt.plot(x,y1[i],linewidth=2.0)
-plt.xlim((VBM,CBM))
-plt.ylim((-4,6))
-plt.xlabel('Fermi level (eV)')
-plt.ylabel('Formation energy (eV)')
-plt.xticks((0,1,2,3))
-plt.axes().set_aspect(0.7)
-
-
-# In[697]:
-
-x = [VBM, CBM]
-y2 = [[Formation_Al_2[i],Formation_Al_2_CBM[i]] for i in Formation_Al_2]
-#linetypes = ['solid','--',':']
-#fig = plt.figure()
-for i in range(len(y1)):
-    plt.plot(x,y2[i],linewidth=2.0)
-plt.xlim((VBM,CBM))
-plt.ylim((-4,6))
-plt.xlabel('Fermi level (eV)')
-plt.ylabel('Formation energy (eV)')
-plt.xticks((0,1,2,3))
-plt.axes().set_aspect(0.7)
-
-
-# In[698]:
-
-# try subplots for two sets of results with different chemical potential
-x = [VBM, CBM]
-y1 = [[Formation_Al_1[i],Formation_Al_1_CBM[i]] for i in Formation_Al_1]
-y2 = [[Formation_Al_2[i],Formation_Al_2_CBM[i]] for i in Formation_Al_2]
-f, ax = plt.subplots(1, 2, sharey=True)
-for i in range(len(y1)):
-    ax[0].plot(x, y1[i],linewidth=2)
-    ax[1].plot(x, y2[i],linewidth=2)
-for i in [0,1]:
-    ax[i].set_xlim([0, 3.754])
-    ax[i].set_xticks((0,1,2,3))
-    ax[i].set_xlabel('Fermi level (eV)')
-ax[0].set_ylabel('Formation energy (eV)')
-
-
-# ---
-# 1. Under Na-poor condition, Al_Na-V_2Na is the most stable defect for a large energy range within the gap
-# 2. Al_Na can complex with V_Na to form defect complex
-# 3. Under Na-rich condition, if the Fermi level is pinned near the middle of the gap, Al_Mn has lower formation energy than Al_Na, indicating that Al in Na layer can be effectively prohibited.
-# ---
-
-# ---
-# ## Mg impurities
-# ---
-
-# In[499]:
-
-# at VBM
-# under Na-rich condition
-#Formation_Mg_1={'Mg_Na^0':1.245,'Mg_Na^+':-1.344,'Mg_Na-V_Na^0':2.4435,'Mg_Mn^-':3.008,'Mg_Mn^0':1.625}
-#Formation_Mg_2={'Mg_Na^0':1.763,'Mg_Na^+':-0.826,'Mg_Na-V_Na^0':0.3895,'Mg_Mn^-':2.491,'Mg_Mn^0':1.108}
-
-
-# In[498]:
-
-#defect_Mg=group_Defect(Formation_Mg_1)
-#defect_Mg
-
-
-# In[753]:
-
-defect_Mg = group_Defect(ChemPot1, 'Mg')
-defect_Mg
-
-
-# In[754]:
-
-Mg_Na_trans = transition_level('Mg_Na')
-Mg_Na_trans
-
-
-# In[196]:
-
-#print_tran_level(defect_Mg)
-
-
-# In[755]:
-
-defect_Mg
-
-
-# In[756]:
-
-s_Na_rich = [set_up_plot(defect_key,ChemPot1) for defect_key in group_Defect(ChemPot1, 'Mg')]
-x = [[s_Na_rich[i][j][0] for j in range(len(s_Na_rich[i]))] for i in range(len(s_Na_rich))]
-y = [[s_Na_rich[i][j][1] for j in range(len(s_Na_rich[i]))] for i in range(len(s_Na_rich))]
-linetypes = ['solid','--',':']
-linecolor = ['r','g','b']
-for i in range(len(s_Na_rich)):
-    plt.plot(x[i],y[i],ls=linetypes[i],linewidth=2.0)
-plt.ylim((-2,4))
-plt.xlim((VBM,CBM))
-plt.ylabel('Formation energy (eV)')
-plt.xlabel('Fermi level (eV)')
-plt.axes().set_aspect('equal')
-plt.xticks(range(0,4))
-
-
-# In[758]:
-
-s_Na_poor = [set_up_plot(defect_key,ChemPot2) for defect_key in group_Defect(ChemPot2, 'Mg')]
-x2 = [[s_Na_poor[i][j][0] for j in range(len(s_Na_poor[i]))] for i in range(len(s_Na_poor))]
-y2 = [[s_Na_poor[i][j][1] for j in range(len(s_Na_poor[i]))] for i in range(len(s_Na_poor))]
-linetypes = ['solid','--',':']
-linecolor = ['r','g','b']
-for i in range(len(s_Na_poor)):
-    plt.plot(x2[i],y2[i],ls=linetypes[i],linewidth=2.0)
-plt.ylim((-2,4))
-plt.xlim((VBM,CBM))
-plt.ylabel('Formation energy (eV)')
-plt.xlabel('Fermi level (eV)')
-plt.axes().set_aspect('equal')
-#plt.xticks(,minor=True)
-xtics = list(range(0,4))
-#xtics_char = ['One','Two','Three','Four']
-#ml = MultipleLocator(5)
-plt.xticks(xtics)
-#plt.axes().yaxis.set_minor_locator(ml)
-#plt.xticks
-
-
-# ---
-# ## Mn-related defects
-# ---
-
-# In[312]:
-
-#Formation_Mn_1={'Mn_Na^0':1.078,'Mn_Na^+':-1.587,'V_Mn^0':7.2675,'V_Mn^-':8.1865,'V_Mn^2-':10.4065,'V_Mn^3-':12.9065}
-
-
-# In[793]:
-
-Mn_plot_Na_rich = [set_up_plot(defect_key,ChemPot1) for defect_key in group_Defect(ChemPot1,'Mn')]
-Mn_plot_Na_poor = [set_up_plot(defect_key,ChemPot2) for defect_key in group_Defect(ChemPot2,'Mn')]
-
-
-# In[799]:
-
-set_up_plot('V_Mn',ChemPot2)
-
-
-# In[801]:
-
-Mn_plot_Na_poor
-
-
-# In[796]:
-
-group_Defect(ChemPot1,'Mn')
-
-
-# In[806]:
-
-for list_i in Mn_plot_Na_poor:
-    x_Mn_poor = [list_i[i][0] for i in range(len(list_i))]
-    y_Mn_poor = [list_i[i][1] for i in range(len(list_i))]
-    plt.plot(x_Mn_poor,y_Mn_poor,linewidth=2.0)
-plt.xlim(VBM,CBM)
-plt.ylim((-2,4))
-plt.xticks([0,1,2,3])
-plt.axes().set_aspect(1.2)
-plt.xlabel('Fermi level (eV)')
-plt.ylabel('Formation energy (ev)')
-
-
-# In[802]:
-
-for list_i in Mn_plot_Na_rich:
-    x_Mn_rich = [list_i[i][0] for i in range(len(list_i))]
-    y_Mn_rich = [list_i[i][1] for i in range(len(list_i))]
-    plt.plot(x_Mn_rich,y_Mn_rich,linewidth=2.0)
-plt.xlim(VBM,CBM)
-plt.xticks([0,1,2,3])
-plt.axes().set_aspect(0.6)
-plt.xlabel('Fermi level (eV)')
-plt.ylabel('Formation energy (ev)')
-
-
-# In[ ]:
-
-
-
